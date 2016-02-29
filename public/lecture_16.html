@@ -1,0 +1,110 @@
+Notice, Under the spec folder we have two helper files. viz rails_helper.rb and spec_helper.rb
+
+So here we are going to create a new directory and thats where we are going to have our tests.
+
+mkdir spec/features
+
+Notice how the features directory got created.
+
+Now within this features directory create a new file and then call it creating_article_spec.rb
+
+To write a feature test there is specific syntax which you need to follow
+
+
+creating_article_spec.rb
+
+require 'rails_helper'
+
+RSpec.feature "Creating Articles" do
+  scenario "A user creates a new article" do
+    visit "/"
+
+    click_link "New Article"
+
+    fill_in "Title", with: "Creating first article"
+    fill_in "Body", with: "Hare sreenivasa"
+    click_button "Create Article"
+
+    expect(page).to have_content("Article has been created")
+    expect(page.current_path).to eq(articles_path)
+  end
+end
+
+
+At this point we wanna run the above test.
+
+Command : rspec :- Runs all the spec tests
+If you wanna run specific test(s) then use the below command:
+
+rspec spec/features/creating_article_spec.rb
+(Here I am specifing one single spec or test to run)
+
+1) Creating Articles A user creates a new article
+     Failure/Error: visit "/"
+     ActionController::RoutingError:
+       No route matches [GET] "/"
+
+
+The first error is because we dont have root route defined in our application.
+So let's fix this by defining a root route
+
+routes.rb
+
+add,
+root to: 'articles#index'
+
+save and run the test again.
+
+ 1) Creating Articles A user creates a new article
+     Failure/Error: visit "/"
+     ActionController::RoutingError:
+       uninitialized constant ArticlesController
+
+This time though we still have the same error with a slight difference. It says Uninitialized constant ArticlesController. It is saying that we need to create Articles Controller because we have specified in the routes that the root is Article's controller Index action.
+
+rails g controller articles index
+
+Now run the test again, (rspec spec/features/creating_article_spec.rb)
+
+ 1) Creating Articles A user creates a new article
+     Failure/Error: click_link "New Article"
+     Capybara::ElementNotFound:
+       Unable to find link "New Article"
+
+Notice how the routing error have disappeared. We haven't implemented this feature so it is saying      Failure/Error: click_link "New Article"
+
+We are going to create this link now. In the app/views/articles/index.html.erb
+
+<h1>Create a new Article</h1>
+
+<%= link_to 'New Article', new_article_path %>
+
+Now re-run this test again,(rspec spec/features/creating_article_spec.rb)
+
+1) Creating Articles A user creates a new article
+     Failure/Error: visit "/"
+     ActionView::Template::Error:
+       undefined local variable or method `new_article_path' for #<#<Class:0x00000000a89080>:0x00000000a9b0c8>
+
+Now it is saying template error and undefined local variable new_article_path because we haven't defined new_article_path yet.
+
+But notice in the spec we have said click 'New Article'. Now it is clicking the link 'New Article' but it is unable to find the route as it is not defined yet.
+
+At this point we can also run the application (rails s) and try to emulate what this feature test is doing. we can do a small hack or cheat by removing the new_article_path in the link_to i.e., something like,
+
+<%= link_to 'New Article', "" %>
+
+So as to make sure that the link New Article is getting clicked.
+
+
+
+
+
+
+
+
+
+
+
+
+
